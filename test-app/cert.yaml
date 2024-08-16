@@ -1,0 +1,20 @@
+kind: Certificate
+apiVersion: certmanager.k8s.io/v1alpha1
+metadata:
+  name: test-app-cert
+  labels:
+    app: test-app
+spec:
+  acme:
+    config:
+    - dns01:
+        provider: aws-route53
+      domains:
+      - 'test.dev.moabukar.co.uk'
+  commonName: ""
+  dnsNames:
+  - 'test.dev.moabukar.co.uk'
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt-prod
+  secretName: test-app-cert

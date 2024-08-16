@@ -1,0 +1,36 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: traefik-ingress-service
+  namespace: traefik
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: gate.zoidberg.wandera.cz
+    service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: "900"
+  labels:
+    app: traefik-ingress
+spec:
+  selector:
+    app: traefik-ingress
+  ports:
+  - protocol: TCP
+    port: 80
+    name: http
+  - protocol: TCP
+    port: 443
+    name: https
+  type: LoadBalancer
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: traefik-api-service
+  namespace: traefik
+  labels:
+    app: traefik-ingress
+spec:
+  selector:
+    app: traefik-ingress
+  ports:
+  - protocol: TCP
+    port: 8080
+    name: http-api

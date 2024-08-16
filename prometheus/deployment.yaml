@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus-operator
+  namespace: monitoring
+  labels:
+    app: prometheus-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus-operator
+  template:
+    metadata:
+      labels:
+        app: prometheus-operator
+    spec:
+      containers:
+      - args:
+        - --kubelet-service=kube-system/kubelet
+        - --config-reloader-image=quay.io/coreos/configmap-reload:v0.0.1
+        image: quay.io/coreos/prometheus-operator:v0.30.0
+        name: prometheus-operator
+        ports:
+        - containerPort: 8080
+          name: http
+        resources:
+          requests:
+            cpu: 50m
+            memory: 80Mi
+          limits:
+            cpu: 100m
+            memory: 160Mi
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+      serviceAccountName: prometheus-operator
+      tolerations: []
+      nodeSelector: {}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  labels:
+    app: prometheus-monitoring
+  name: prometheus
+  namespace: monitoring
+spec:
+  baseImage: "quay.io/prometheus/prometheus"
+  version: "v2.9.2"
+  externalLabels:
+    env: dev
+  externalUrl: "https://prometheus.dev.moabukar.co.uk"
+  replicas: 1
+  nodeSelector: {}
+  tolerations: []
+  logLevel: info
+  serviceMonitorSelector:
+    matchExpressions:
+    - key: app
+      operator: Exists
+  serviceMonitorNamespaceSelector:
+    matchExpressions:
+    - key: app
+      operator: Exists
+  ruleSelector:
+    matchLabels:
+      prometheus: k8s
+      role: alert-rules
+  ruleNamespaceSelector:
+    matchExpressions:
+    - key: app
+      operator: Exists
+  resources:
+    limits:
+      cpu: 100m
+      memory: 200Mi
+    requests:
+      cpu: 100m
+      memory: 200Mi
+  retention: "2h"
+  routePrefix: "/"
+  serviceAccountName: prometheus
+  securityContext:
+    fsGroup: 2000
+    runAsNonRoot: true
+    runAsUser: 1000

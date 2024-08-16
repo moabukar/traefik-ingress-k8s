@@ -1,0 +1,23 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    kubernetes.io/tls-acme: "true"
+    certmanager.k8s.io/cluster-issuer: letsencrypt-prod
+  name: test-app
+  labels:
+    app: test-app
+spec:
+  rules:
+  - host: test.dev.moabukar.co.uk
+    http:
+      paths:
+      - backend:
+          serviceName: test-app
+          servicePort: 80
+        path: /
+  tls:
+  - hosts:
+    - test.dev.moabukar.co.uk
+    secretName: test-app-cert

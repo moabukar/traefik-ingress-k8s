@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: external-dns
+  namespace: kube-system
+  labels:
+    app: external-dns
+spec:
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: external-dns
+  template:
+    metadata:
+      labels:
+        app: external-dns
+    spec:
+      serviceAccountName: external-dns
+      tolerations: []
+      nodeSelector: {}
+      containers:
+      - name: external-dns
+        image: registry.opensource.zalan.do/teapot/external-dns:v0.5.6
+        args:
+        - --source=service
+        - --source=ingress
+        - --domain-filter=dev.moabukar.co.uk.
+        - --provider=aws
+        - --aws-max-change-count=100
+        - --registry=txt
+        - --txt-prefix=txt.
+        - --txt-owner-id=external-dns.dev.moabukar.co.uk.
+        resources:
+          requests:
+            memory: "20Mi"
+            cpu: "100m"
+          limits:
+            memory: "64Mi"
+            cpu: "200m"
+
